@@ -39,7 +39,7 @@ investment-tracking-qa/
 | Test Execution | ✅ Done — 14 PASS / 1 FAIL |
 | Bug Reports | ✅ 1 filed (BUG-001) |
 | Regression Testing | ⬜ Pending (after BUG-001 is fixed) |
-| API Testing | ✅ Done — Postman collection + 5 executed cases |
+| API Testing | ✅ Done — Postman collection, Environment file, 11/11 assertions passed via Newman CLI |
 | Test Summary Report | ✅ Done |
 
 ## Results at a glance

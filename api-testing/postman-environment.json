@@ -1,0 +1,8 @@
+{
+  "name": "Investment Tracker - RapidAPI",
+  "values": [
+    { "key": "base_url", "value": "https://yahoo-finance166.p.rapidapi.com", "enabled": true },
+    { "key": "rapidapi_host", "value": "yahoo-finance166.p.rapidapi.com", "enabled": true },
+    { "key": "rapidapi_key", "value": "PUT_YOUR_RAPIDAPI_KEY_HERE", "enabled": true }
+  ]
+}
