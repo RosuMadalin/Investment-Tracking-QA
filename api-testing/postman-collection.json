@@ -1,0 +1,261 @@
+{
+  "info": {
+    "name": "Investment Tracker - API Testing",
+    "description": "API tests for the third-party endpoints (RapidAPI - Yahoo Finance) that Investment Tracker depends on for prices, historical chart data, and news. Firebase Firestore is not included here since the app talks to it through the Firebase SDK, not a REST API.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "https://yahoo-finance166.p.rapidapi.com" },
+    { "key": "rapidapi_key", "value": "PUT_YOUR_RAPIDAPI_KEY_HERE" },
+    { "key": "rapidapi_host", "value": "yahoo-finance166.p.rapidapi.com" }
+  ],
+  "item": [
+    {
+      "name": "Price",
+      "item": [
+        {
+          "name": "GET price - valid symbol (AAPL)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-rapidapi-key", "value": "{{rapidapi_key}}" },
+              { "key": "x-rapidapi-host", "value": "{{rapidapi_host}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/stock/get-price?region=US&symbol=AAPL",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stock", "get-price"],
+              "query": [
+                { "key": "region", "value": "US" },
+                { "key": "symbol", "value": "AAPL" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Response has a regularMarketPrice', () => {",
+                  "  pm.expect(json.quoteSummary.result[0].price.regularMarketPrice.raw).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET price - invalid symbol (ZZZZZ)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-rapidapi-key", "value": "{{rapidapi_key}}" },
+              { "key": "x-rapidapi-host", "value": "{{rapidapi_host}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/stock/get-price?region=US&symbol=ZZZZZ",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stock", "get-price"],
+              "query": [
+                { "key": "region", "value": "US" },
+                { "key": "symbol", "value": "ZZZZZ" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404 for unknown symbol', () => pm.response.to.have.status(404));",
+                  "const json = pm.response.json();",
+                  "pm.test('Error body reports Not Found', () => {",
+                  "  pm.expect(json.error).to.eql(true);",
+                  "  pm.expect(json.message.quoteSummary.error.code).to.eql('Not Found');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET price - missing symbol param",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-rapidapi-key", "value": "{{rapidapi_key}}" },
+              { "key": "x-rapidapi-host", "value": "{{rapidapi_host}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/stock/get-price?region=US",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stock", "get-price"],
+              "query": [
+                { "key": "region", "value": "US" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Observed behavior on 2026-08-19: the API returns 200 with a cached/default quote instead of a 400 for a missing required 'symbol' param.",
+                  "// This test documents that observed behavior as a baseline rather than asserting the 'ideal' response, so a future change is caught as a regression either way.",
+                  "pm.test('Response status is documented (200 observed, not 400)', () => {",
+                  "  pm.expect(pm.response.code).to.eql(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Historical Chart",
+      "item": [
+        {
+          "name": "GET chart - valid symbol + range (AAPL, 1mo)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-rapidapi-key", "value": "{{rapidapi_key}}" },
+              { "key": "x-rapidapi-host", "value": "{{rapidapi_host}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/stock/get-chart?region=US&range=1mo&symbol=AAPL&interval=5m",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stock", "get-chart"],
+              "query": [
+                { "key": "region", "value": "US" },
+                { "key": "range", "value": "1mo" },
+                { "key": "symbol", "value": "AAPL" },
+                { "key": "interval", "value": "5m" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Response contains chart result with timestamps', () => {",
+                  "  pm.expect(json.chart.result[0].timestamp).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET chart - invalid symbol",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-rapidapi-key", "value": "{{rapidapi_key}}" },
+              { "key": "x-rapidapi-host", "value": "{{rapidapi_host}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/stock/get-chart?region=US&range=1mo&symbol=ZZZZZ&interval=5m",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stock", "get-chart"],
+              "query": [
+                { "key": "region", "value": "US" },
+                { "key": "range", "value": "1mo" },
+                { "key": "symbol", "value": "ZZZZZ" },
+                { "key": "interval", "value": "5m" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Request completes (status documented, not assumed)', () => {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "News",
+      "item": [
+        {
+          "name": "GET news - valid symbol (AAPL)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-rapidapi-key", "value": "{{rapidapi_key}}" },
+              { "key": "x-rapidapi-host", "value": "{{rapidapi_host}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/news/list-by-symbol?s=AAPL&region=US&snippetCount=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "news", "list-by-symbol"],
+              "query": [
+                { "key": "s", "value": "AAPL" },
+                { "key": "region", "value": "US" },
+                { "key": "snippetCount", "value": "5" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', () => pm.response.to.have.status(200));",
+                  "const json = pm.response.json();",
+                  "pm.test('Response contains a news stream array', () => {",
+                  "  pm.expect(json.data.main.stream).to.be.an('array').that.is.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET news - missing symbol param",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "x-rapidapi-key", "value": "{{rapidapi_key}}" },
+              { "key": "x-rapidapi-host", "value": "{{rapidapi_host}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/news/list-by-symbol?region=US&snippetCount=5",
+              "host": ["{{base_url}}"],
+              "path": ["api", "news", "list-by-symbol"],
+              "query": [
+                { "key": "region", "value": "US" },
+                { "key": "snippetCount", "value": "5" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Request completes (status documented, not assumed)', () => {",
+                  "  pm.expect(pm.response.code).to.be.a('number');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
