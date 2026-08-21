@@ -57,4 +57,3 @@ Defects found during execution are logged as markdown files in `bug-reports/`, t
 - Board: To Do → In Progress → Ready for Test → In Testing → Failed → Passed → Done
 - BUG-001 is tracked as **ITQ-2**, currently in `Failed` — see `screenshots/jira-board.png` and `screenshots/jira-BUG-001.png`
 
-This repo, not the Jira account, is what's shared with employers — Jira is used and evidenced here through screenshots, not linked directly.
